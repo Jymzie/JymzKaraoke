@@ -22,8 +22,9 @@
                         </v-col>
                     </v-row>
                    
-                    
-                    <v-simple-table class="text-center" fixed-header :height="($vuetify.breakpoint.height)*.62">
+                   
+                    <v-simple-table  class="text-center"   fixed-header :height="($vuetify.breakpoint.height)*.62">
+   
                         <thead >
                             <tr >
                                 <th class="text-center"  v-for="(header,i) in header" :key="i">{{ header }}</th>
@@ -31,6 +32,8 @@
                             </tr>
                             
                         </thead>
+                      
+                    
                         <tbody>
                             <tr v-for="(data,j) in cFilter" :key="j">
                                 <td v-for="(header,i) in header" :key="i">
@@ -46,6 +49,7 @@
                             </tr>
                         </tbody>
                     </v-simple-table>
+             
                 </v-card-text>
             </v-card>
           
@@ -55,12 +59,14 @@
                 <v-card-title>
                     <h1  style="color: white;">
                         Queue
-                       
                     </h1>
                     <v-spacer/>
-                    <v-btn  @click="mClear">
-                            Clear
-                        </v-btn>
+                    <v-btn @click="openctrl = true">
+                        <v-icon>
+                            mdi-remote
+                        </v-icon>
+                    </v-btn>
+                  
                 </v-card-title>
                 <v-card-text>
                     <v-simple-table  class="text-center" fixed-header :height="($vuetify.breakpoint.height)*.7">
@@ -77,9 +83,10 @@
                                 </td>
                                 <td>
                              
-                                    <v-icon @click="mToCancel(data)">
+                                    <v-icon v-if="j!=0" @click="mToCancel(data)">
                                         mdi-close
                                     </v-icon>
+                                    <b v-else>Playing</b>
                             
                                 </td>
                             </tr>
@@ -91,25 +98,74 @@
         </v-col>
     </v-row>
 
-    <!-- NOTE Upload Dialog  -->
-    <v-dialog v-model="toupload" max-width="50%" persistent>
-        <v-card>
-            <v-card-title >Upload
-            <v-spacer/>
-                    <v-icon @click="mCloseUpload">mdi-close</v-icon>
+    <!-- NOTE Controller  -->
+    <v-dialog v-model="openctrl" persistent  :max-width="cResizeDialog">
+        <v-card class="text-center" color="black">
+            <v-card-title>
+                <div >
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    style="width: 150px;"
+                    v-model="percentage"
+                   @input="mVidDuration"
+                />
+                </div>
+                <v-icon @click="mFullscreen" color="white">
+                    mdi-fullscreen
+                </v-icon>
+                <v-spacer/>
+                <v-icon @click="openctrl = false" color="red">
+                    mdi-close
+                </v-icon>
             </v-card-title>
             <v-card-text>
-                <v-text-field v-model="file.name" dense outlined></v-text-field>
-                <v-file-input v-model="file.content" dense outlined></v-file-input>
-                <v-btn block @click="mUpload" :disabled="file.name == '' || file.content == null ? true : false">
+                <v-btn  @click="mPlay">
+                    <v-icon>
+                        mdi-play-pause
+                    </v-icon>
+                </v-btn>
+                <v-btn class="ml-1" @click="mNext" v-if="queue.length > 1">
+                    <v-icon>
+                        mdi-skip-next
+                    </v-icon>
+                </v-btn>
+                <v-btn class="ml-1"  @click="mClear"  v-if="queue.length != 0">
+                    <v-icon>
+                        mdi-stop
+                    </v-icon>
+                </v-btn>
+               
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+
+    <!-- NOTE Upload Dialog  -->
+    <v-dialog v-model="toupload"  persistent :max-width="cResizeDialog">
+        <v-card color="black">
+            <v-card-title>
+                <h2  style="color: white;">
+                    Upload
+                </h2>
+            <v-spacer/>
+                    <v-icon @click="mCloseUpload" color="red">mdi-close</v-icon>
+            </v-card-title>
+            <v-card-text>
+                <v-text-field v-model="file.name" dense outlined background-color="white" placeholder="Title"></v-text-field>
+                <v-file-input v-model="file.content" dense outlined class="mt-n4" background-color="white" placeholder="attach file here..."></v-file-input>
+                <v-btn class="mt-n4" block @click="!uploading ? mUpload():''" v-if="file.name == '' || file.content == null ? false : true">
                     <v-progress-circular
                     color="primary"
                         :rotate="360"
                     :value="uploadProgress"
-                    v-show="uploading == true ? true : false"
+                    v-if="uploading == true"
                     >{{ uploadProgress }}%</v-progress-circular>
 
-                    Upload
+                    <v-icon v-else>
+                        mdi-upload
+                    </v-icon>
                 </v-btn>
             </v-card-text>
         </v-card>
@@ -125,7 +181,18 @@ export default {
         this.mGetQueue()
         this.$socket.on('reloadme', () => {
             this.mGetQueue()
+            
         });
+        this.$socket.on('loadtimestamp', (time) => {
+            this.percentage = (time/this.duration)*100
+        });
+
+        this.$socket.on('taketotaldur', (time) => {
+            this.duration = time
+            
+        });
+
+      
     },
     data() {
       return {
@@ -137,7 +204,10 @@ export default {
         toupload:false,
         file:{name:'',content:null},
         uploading:false,
-        uploadProgress:0
+        uploadProgress:0,
+        openctrl:false,
+        percentage:0,
+        duration:0,
 
       };
     },
@@ -155,6 +225,7 @@ export default {
             })
         },
         mGetQueue(){
+           
             axios.get(`api/play?mode=q`)
             .then(res=>{
                 if(res.data.length !=0){
@@ -194,6 +265,7 @@ export default {
                 alert('Video has been added!')
                 this.mGetList()
                 this.mCloseUpload()
+                this.uploadProgress=0
             })
             // .catch(({response})=>{
             //     if(response.status == 400){
@@ -221,7 +293,27 @@ export default {
             .finally(()=>{
                 this.$socket.emit('reload_data')
             })
+        },
+        mNext(){
+          axios.delete(`api/play/del`)
+          .finally(()=>{
+            //update queue
+            this.$socket.emit('reload_data','next')
+            //new set of video
+         
+          })
+          
+        },
+        mPlay(){
+            this.$socket.emit('toggleplay')
+        },
+        mVidDuration(){
+            this.$socket.emit('setdur',this.percentage)
+        },
+        mFullscreen(){
+            this.$socket.emit('reqfullscreen')
         }
+    
     },
     computed:{
         cFilter(){
@@ -234,10 +326,18 @@ export default {
             if(this.header2)
                 return this.header2.filter( rec => !rec.includes('Link'))
         },
+        cResizeDialog(){
+             return this.$vuetify.breakpoint.xl ? '15%':
+             this.$vuetify.breakpoint.lg ? '20%':
+             this.$vuetify.breakpoint.md ? '28%':
+             this.$vuetify.breakpoint.sm ? '45%': '100%'
+        }
     }
 }
 </script>
 
 <style>
+
+
 
 </style>

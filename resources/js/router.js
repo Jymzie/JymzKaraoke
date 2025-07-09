@@ -7,7 +7,7 @@ Vue.use(VueRouter)
 
 let router = new VueRouter({
     mode: 'history',
-    base: '/Karaoke/',  //NOTE disable this and npm run dev for server deploy
+    base: '/Karaoke/', 
     routes: [
      
      

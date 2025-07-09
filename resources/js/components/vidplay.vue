@@ -1,4 +1,5 @@
 <template>
+  <!-- NOTE https://codesandbox.io/p/sandbox/eloquent-mahavira-9kgrc?file=%2Fsrc%2FApp.vue&from-embed&initialpath=%2F  -->
     <div>
       <video
         :src="src"
@@ -7,6 +8,7 @@
         :controls="controls"
         controlsList="nodownload"
         :loop="loop"
+        style="border-radius: 10px;"
         :width="width"
         :height="height"
         :poster="poster"
@@ -27,7 +29,9 @@
         :video-muted="videoMuted"
         :toggle-mute="toggleMute"
         :toggle-next="toggleNext"
+        :toggle-Fullscreen="toggleFullscreen"
       ></slot>
+      
     </div>
   </template>
   
@@ -51,8 +55,8 @@
       src: { type: String, required: true },
       controls: { type: Boolean, required: false, default: false },
       loop: { type: Boolean, required: false, default: false },
-      width: { type: Number, required: false, default: 900 },
-      height: { type: Number, required: false, default: 500 },
+      width: { type: Number, required: false, default: 800 },
+      height: { type: Number, required: false, default: 450 },
       autoplay: { type: Boolean, required: false, default: false },
       muted: { type: Boolean, required: false, default: false },
       poster: { type: String, required: false },
@@ -63,8 +67,25 @@
         playing: false,
         duration: 0,
         percentagePlayed: 0,
-        videoMuted: false,
+        videoMuted: false
       };
+    },
+    created(){
+      this.$socket.on('reloadme', (cmd) => {
+        if(cmd == 'next')
+        setTimeout(() => {
+          this.toggleNext()
+        }, 1000);
+      });
+      this.$socket.on('playpause', () => {
+          this.togglePlay()
+      });
+      this.$socket.on('loaddur', (per) => {
+          this.seekToPercentage(per)
+      });
+      this.$socket.on('dofullscreen', () => {
+         this.toggleFullscreen()
+      });
     },
     mounted() {
       this.bindEvents();
@@ -72,8 +93,20 @@
       if (this.$refs.player.muted) {
         this.setMuted(true);
       }
+ 
     },
     methods: {
+      toggleFullscreen() {
+        const elem = this.$refs.player;
+        
+        if (!document.fullscreenElement) {
+          elem.requestFullscreen().catch(err => {
+            console.warn(`Error attempting to enter fullscreen: ${err.message}`);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      },
       bindEvents() {
         EVENTS.forEach((event) => {
           this.bindVideoEvent(event);
@@ -157,9 +190,15 @@
 
       toggleNext(){
         this.$refs.player.load();
-        console.log('muna')
+      },
+      GetDuration(){
+        return this.duration
       }
     },
   };
   </script>
+
+  <style scoped>
+ 
+  </style>
   

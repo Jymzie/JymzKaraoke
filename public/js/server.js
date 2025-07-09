@@ -16,8 +16,24 @@ io.on('connection', function (socket) {
     console.log("new client connected");
 
     socket.on('reload_data', function (item) {
-      io.emit('reloadme')
-    console.log(item)
+      io.emit('reloadme', item)
+      console.log('do '+item)
+    })
+    socket.on('toggleplay', function () {
+      io.emit('playpause')
+      console.log('do playpause')
+    })
+    socket.on('givetotaldur', function (time) {
+      io.emit('taketotaldur',time)
+    })
+    socket.on('settimestamp', function (time) {
+      io.emit('loadtimestamp',time)
+    })
+    socket.on('setdur', function (per) {
+      io.emit('loaddur',per)
+    })
+    socket.on('reqfullscreen', function () {
+      io.emit('dofullscreen')
     })
 });
 
