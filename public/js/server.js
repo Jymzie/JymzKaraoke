@@ -35,6 +35,10 @@ io.on('connection', function (socket) {
     socket.on('reqfullscreen', function () {
       io.emit('dofullscreen')
     })
+    socket.on('reqtotaldur', function () {
+      io.emit('sendtotaldur')
+    })
+    
 });
 
 server.listen(9090, function () {

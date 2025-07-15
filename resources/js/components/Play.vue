@@ -102,6 +102,12 @@
       this.$socket.on('reloadme', () => {
             this.mGetQueue()
         });
+
+        this.$socket.on('sendtotaldur', () => {
+            
+          this.$socket.emit('givetotaldur',this.duration)
+        });
+
     },
     mounted(){
       this.$refs.invisibleElement.focus()
@@ -125,7 +131,8 @@
       return {
         time: 0,
         list:[],
-        currentvid:'video/Sample.mp4',
+        currentvid:'Sample.mp4',
+        duration: 0,
       };
     },
     methods: {
@@ -148,8 +155,8 @@
 
       },
       onPlayerLoadeddata({ event, player  }) {
-        let duration = player.GetDuration()
-        this.$socket.emit('givetotaldur',duration)
+        this.duration = player.GetDuration()
+        this.$socket.emit('givetotaldur',this.duration)
         console.log(event.type);
       },
       onPlayerWaiting({ event }) {
@@ -184,9 +191,9 @@
             .finally(()=>{
               if(this.list.length != 0)
               
-                  this.currentvid = this.list[0].Link
+                  this.currentvid = 'video/'+this.list[0].Title+'.mp4'
             else
-              this.currentvid = 'video/Sample.mp4'
+              this.currentvid = 'Sample.mp4'
             })
         },
         onNext(){

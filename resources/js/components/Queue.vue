@@ -7,20 +7,18 @@
                     <h1  style="color: white;">
                         List
                     </h1>
+                    <v-spacer/>
+                    <v-btn @click="toupload = true">
+                        <v-icon>
+                            mdi-upload
+                        </v-icon>
+                    </v-btn>
+                    
                 </v-card-title>
                 <v-card-text>
-                    <v-row>
-                        <v-col cols="10">
-                            <v-text-field background-color="white" outlined dense v-model="search" placeholder="Search"></v-text-field>
-                        </v-col>
-                        <v-col cols="2">
-                            <v-btn @click="toupload = true">
-                                <v-icon>
-                                    mdi-upload
-                                </v-icon>
-                            </v-btn>
-                        </v-col>
-                    </v-row>
+                  
+                    <v-text-field background-color="white" outlined dense v-model="search" placeholder="Search"></v-text-field>
+                    
                    
                    
                     <v-simple-table  class="text-center"   fixed-header :height="($vuetify.breakpoint.height)*.62">
@@ -72,13 +70,13 @@
                     <v-simple-table  class="text-center" fixed-header :height="($vuetify.breakpoint.height)*.7">
                         <thead v-if="queue.length != 0">
                             <tr >
-                                <th class="text-center"  v-for="(header,i) in cQueueHeader" :key="i">{{ header }}</th>
+                                <th class="text-center"  v-for="(header,i) in header2" :key="i">{{ header }}</th>
                                 <th class="text-center">Cancel</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(data,j) in queue" :key="j">
-                                <td v-for="(header,i) in cQueueHeader" :key="i">
+                                <td v-for="(header,i) in header2" :key="i">
                                     {{ data[header] }}
                                 </td>
                                 <td>
@@ -153,9 +151,9 @@
                     <v-icon @click="mCloseUpload" color="red">mdi-close</v-icon>
             </v-card-title>
             <v-card-text>
-                <v-text-field v-model="file.name" dense outlined background-color="white" placeholder="Title"></v-text-field>
-                <v-file-input v-model="file.content" dense outlined class="mt-n4" background-color="white" placeholder="attach file here..."></v-file-input>
-                <v-btn class="mt-n4" block @click="!uploading ? mUpload():''" v-if="file.name == '' || file.content == null ? false : true">
+                <!-- <v-text-field v-model="file.name" dense outlined background-color="white" placeholder="Title"></v-text-field> -->
+                <v-file-input v-model="file" dense outlined background-color="white" placeholder="attach file here..."></v-file-input>
+                <v-btn class="mt-n4" block @click="!uploading ? mUpload():''" v-if="file == null ? false : true">
                     <v-progress-circular
                     color="primary"
                         :rotate="360"
@@ -177,8 +175,11 @@
 <script>
 export default {
     created(){
-      this.mGetList()
+        this.mGetList()
         this.mGetQueue()
+        
+        this.$socket.emit('reqtotaldur')
+        
         this.$socket.on('reloadme', () => {
             this.mGetQueue()
             
@@ -202,7 +203,7 @@ export default {
         queue:[],
         search:'',
         toupload:false,
-        file:{name:'',content:null},
+        file:null,
         uploading:false,
         uploadProgress:0,
         openctrl:false,
@@ -247,8 +248,8 @@ export default {
         //NOTE Upload
         mUpload(){
             const formData = new FormData()
-            formData.append("name",this.file.name)
-            formData.append("content",this.file.content)
+            // formData.append("name",this.file.name)
+            formData.append("content",this.file)
             
             this.uploading = true
             axios.post(`${this.$url}/api/play`,formData,
@@ -280,7 +281,7 @@ export default {
         },
         mCloseUpload(){
             this.toupload = false
-            this.file = {name:'',content:null}
+            this.file = null
         },
         mClear(){
             axios.delete(`api/play/clear`)
@@ -322,10 +323,10 @@ export default {
             else
                 return this.list
         },
-        cQueueHeader(){
-            if(this.header2)
-                return this.header2.filter( rec => !rec.includes('Link'))
-        },
+        // cQueueHeader(){
+        //     if(this.header2)
+        //         return this.header2.filter( rec => !rec.includes('Link'))
+        // },
         cResizeDialog(){
              return this.$vuetify.breakpoint.xl ? '15%':
              this.$vuetify.breakpoint.lg ? '20%':

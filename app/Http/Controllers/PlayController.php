@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PlayController extends Controller
 {
@@ -15,13 +17,22 @@ class PlayController extends Controller
     public function index(Request $req)
     {   if($req->has('mode')){
             return DB::connection('Sample')
-            ->select("SELECT No, Title, Link FROM Queue Q
-            INNER JOIN List L ON Q.ID=L.ID
-            ORDER BY No");
+            ->select("SELECT * FROM Queue");
            
         }
         else{
-            return DB::connection('Sample')->select('SELECT ID, Title FROM List');
+            // return DB::connection('Sample')->select('SELECT ID, Title FROM List');
+
+            
+            $files = collect(Storage::disk('public')->allFiles('video'))
+                ->filter(function ($file) {
+                    return Str::endsWith($file, '.mp4');
+                })
+                ->map(function ($file) {
+                    return ['Title' => basename($file,'.mp4')];
+                });
+
+            return $files;
         }
         
     }
@@ -46,15 +57,15 @@ class PlayController extends Controller
     {
         if($req->has('content')){
             $file = $req->file('content');
-            $file->getClientOriginalName();
-            $filePath = $file->store('video','public');
-            DB::connection('Sample')->insert("INSERT INTO
-            List (Title,Link) VALUES('$req->name','$filePath')");
+            // $filePath = $file->store('video','public');
+            $file->storeAs('video',$file->getClientOriginalName(),'public');
+            // DB::connection('Sample')->insert("INSERT INTO
+            // List (Title,Link) VALUES(?,?)",[$req->name,$filePath]);
         }
-        else{
+        else{   
             return DB::connection('Sample')->select("INSERT INTO 
-            Queue (ID)
-            VALUES ('$req->ID')");
+            Queue (Title)
+            VALUES (?)",[$req->Title]);
         }
         
     }
