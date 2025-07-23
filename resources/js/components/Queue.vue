@@ -431,13 +431,14 @@ export default {
             if(this.search){
                 result = this.list.filter(rec => rec.Title.toUpperCase().includes(this.search.toUpperCase()))
                 this.pages = Math.ceil(result.length/10)
+                this.page = 1
                
             }
             else{
                 result = this.list
                 this.pages = Math.ceil(result.length/10)
             }
-             this.page = 1
+             
             return result.slice((this.page-1)*10,(this.page)*10)
                
         },
