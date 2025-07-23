@@ -108,6 +108,11 @@
           this.$socket.emit('givetotaldur',this.duration)
         });
 
+        // this.$socket.on('reloadplay', () => {
+            
+        //     location.reload()
+        //   });
+
     },
     mounted(){
       this.$refs.invisibleElement.focus()

@@ -38,6 +38,9 @@ io.on('connection', function (socket) {
     socket.on('reqtotaldur', function () {
       io.emit('sendtotaldur')
     })
+    socket.on('reqreload', function () {
+      io.emit('reloadplay')
+    })
     
 });
 

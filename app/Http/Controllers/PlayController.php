@@ -15,7 +15,7 @@ class PlayController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $req)
-    {   if($req->has('mode')){
+    {   if($req->has('mode') || $req->has('old')){
             return DB::connection('Sample')
             ->select("SELECT * FROM Queue");
            
@@ -33,9 +33,13 @@ class PlayController extends Controller
                 });
 
             return $files;
+
+           
         }
         
     }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -63,9 +67,22 @@ class PlayController extends Controller
             // List (Title,Link) VALUES(?,?)",[$req->name,$filePath]);
         }
         else{   
-            return DB::connection('Sample')->select("INSERT INTO 
-            Queue (Title)
-            VALUES (?)",[$req->Title]);
+            $max = DB::connection('Sample')->select("SELECT Max(Prio) AS Max FROM Queue")[0]->Max;
+            if($req->has('data')){
+                $res = "INSERT INTO Queue VALUES";
+                for($x=0;$x<$req->length;$x++){
+                    if($x>0 && $x<$req->length)
+                        $res = $res.",";
+                    $max++;
+                    $res = $res." ($max,?)";
+                }
+                return DB::connection('Sample')->select("$res",$req->data);
+            }
+            else{
+                return DB::connection('Sample')->select("INSERT INTO 
+                Queue VALUES ($max+1,?)",[$req->Title]);
+            }
+           
         }
         
     }
@@ -99,9 +116,50 @@ class PlayController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $req, $id)
     {
-        //
+        if($id == 'changeprio'){
+            $data = self::index($req);
+        
+            $new = $data[$req->new]->Prio;
+            $old = $data[$req->old]->Prio;
+             DB::connection('Sample')->
+                update("UPDATE Queue
+                SET Prio = 0
+                WHERE Prio = ?",[$old]);
+
+             // pataas
+            if($old > $new){
+                for($x=$old; $x>$new; $x--){
+                    DB::connection('Sample')->
+                    update("UPDATE Queue
+                    SET Prio = $x
+                    WHERE Prio = ?",[$x-1]);
+                }
+
+               
+            }
+            //pababa
+            else{
+                for($x=$old; $x<$new; $x++){
+                    DB::connection('Sample')->
+                    update("UPDATE Queue
+                    SET Prio = $x
+                    WHERE Prio = ?",[$x+1]);
+                }
+
+                // DB::connection('Sample')->
+                // update("UPDATE Queue
+                // SET Prio = $req->new -1
+                // WHERE Prio = '$req->rep'");
+            }
+
+            DB::connection('Sample')->
+            update("UPDATE Queue
+            SET Prio = ?
+            WHERE Prio = 0",[$new]);
+
+        }
     }
 
     /**
@@ -113,16 +171,16 @@ class PlayController extends Controller
     public function destroy(Request $req,$id)
     {
         if($id == 'del'){
-            $min = DB::connection('Sample')->select("SELECT Min(No) AS Min FROM Queue")[0]->Min;
+            $min = DB::connection('Sample')->select("SELECT Min(Prio) AS Min FROM Queue")[0]->Min;
             DB::connection('Sample')->delete("DELETE FROM Queue
-            WHERE No = $min");
+            WHERE Prio = $min");
         }
         if($id == 'clear'){
             DB::connection('Sample')->delete("TRUNCATE TABLE Queue");
         }
         if($id == 'cancel'){
             DB::connection('Sample')->delete("DELETE FROM Queue
-            WHERE No = $req->no");
+            WHERE Prio = $req->no");
         }
            
     }

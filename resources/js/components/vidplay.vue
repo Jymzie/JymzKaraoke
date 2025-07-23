@@ -86,6 +86,10 @@
       this.$socket.on('dofullscreen', () => {
          this.toggleFullscreen()
       });
+      this.$socket.on('reloadplay', () => {
+
+        this.mRefresh()
+      });
     },
     mounted() {
       this.bindEvents();
@@ -193,9 +197,14 @@
       },
       GetDuration(){
         return this.duration
+      },
+      async mRefresh(){
+         this.$refs.player.muted = true;
+         await this.$refs.player.play();
+         this.$refs.player.muted = false;
       }
     },
-  };
+  }
   </script>
 
   <style scoped>
