@@ -10,17 +10,15 @@
         /* NOTE use custom font from public folder */
         @font-face {
             font-family: 'Bitcount';
-            src: url("{{ asset('fonts/Bitcount-VariableFont_CRSV,ELSH,ELXP,slnt,wght.ttf') }}") format('truetype');
-            font-style: normal;
+            src: url("{{ asset('fonts/Bitcount-VariableFont_CRSV,ELSH,ELXP,slnt,wght.ttf') }}") format('truetype');       
         }
  
         @font-face {
             font-family: 'DancingScript';
             src: url("{{ asset('fonts/DancingScript-VariableFont_wght.ttf') }}") format('truetype');
-            font-style: normal;
         }
     </style>
-    <title>Title</title>
+    <title>Karaoke</title>
 </head>
 <body>
     <div id="app"></div>
