@@ -33,30 +33,44 @@
                    
                    <!-- ANCHOR List  -->
                     <v-simple-table  class="text-center"   fixed-header :height="($vuetify.breakpoint.height)*.57">
-   
-                        <thead >
-                            <tr >
-                                <th class="text-center"  v-for="(header,i) in header" :key="i">{{ header }}</th>
-                                <th class="text-center">Play</th>
-                            </tr>
-                            
-                        </thead>
-                      
-                    
-                        <tbody>
-                            <tr v-for="(data,j) in cFilter" :key="j">
-                                <td v-for="(header,i) in header" :key="i">
-                                    {{ data[header] }}
-                                </td>
-                                <td>
-                                    
-                                    <v-icon @click="mToQueue(data)">
-                                        mdi-play
-                                    </v-icon>
+                        <v-progress-circular
+                            color="primary"
+                            indeterminate
+                            size="150"
+                            class="mt-10"
+                            v-if="!islistloaded">
+                            Loading Playlist
+                        </v-progress-circular>
+                        <div v-else-if="cFilter.length == 0">
+                            <h1 class="promptempty">Playlist is Empty</h1>
+                        </div>
+                        <template v-else>
+                            <thead >
+                                <tr >
+                                    <th class="text-center"  v-for="(header,i) in listhead" :key="i">{{ header }}</th>
+                                    <th class="text-center">Play</th>
+                                </tr>
                                 
-                                </td>     
-                            </tr>
-                        </tbody>
+                            </thead>
+                        
+                        
+                            <tbody>
+                            
+                                <tr v-for="(data,j) in cFilter" :key="j">
+                                    <td v-for="(header,i) in listhead" :key="i">
+                                        {{ data[header] }}
+                                    </td>
+                                    <td>
+                                        
+                                        <v-icon @click="mToQueue(data)">
+                                            mdi-play
+                                        </v-icon>
+                                    
+                                    </td>     
+                                </tr>
+                            </tbody>
+                        </template>
+                       
                        
                     </v-simple-table>
 
@@ -110,13 +124,13 @@
                   
                 </v-card-title>
                 <v-card-text>
-                    <div v-if="queue.length != 0" class="text-center" style="color: white;">
+                    <div v-if="queue.length != 0" class="text-center" >
                         <v-row>
-                            <v-col cols="2">
-                                <b  >Now Playing: </b>
+                            <v-col cols="6" xl="2" lg="3" md="3" sm="3"  class="text-right" style="color: white;">
+                                <b >Now Playing: </b>
                             </v-col>
-                            <v-col>
-                                <marquee direction="right">{{ current }}</marquee>
+                            <v-col >
+                                <marquee style="background-color: white; border-radius: 10px;" direction="right">{{ current }}</marquee>
                             </v-col>
                         </v-row>
                       
@@ -125,29 +139,43 @@
                    
                     <!-- ANCHOR Queue  -->
                     <v-simple-table  class="text-center" fixed-header :height="($vuetify.breakpoint.height)*.65">
-                        <thead v-if="queue.length > 1">
-                            <tr >
-                                <th class="text-center"  v-for="(header,i) in header2" :key="i">{{ header }}</th>
-                                <th class="text-center">Cancel</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                             <draggable v-model="queue" style="display: contents;"  @end="mChangePrio" >
-                                <tr v-for="(data,j) in queue.slice(1)" :key="j" >
-                                    <td v-for="(header,i) in header2" :key="i">
-                                        {{ data[header] }}
-                                    </td>
-                                    <td>
-                                
-                                        <v-icon @click="mToCancel(data)">
-                                            mdi-close
-                                        </v-icon>
-                                      
-                                
-                                    </td>
+                        <v-progress-circular
+                            color="primary"
+                            indeterminate
+                            size="150"
+                            class="mt-10"
+                            v-if="!isqueueloaded">
+                            Searching...
+                        </v-progress-circular>
+                        <div v-else-if="queue.length <= 1">
+                            <h1 class="promptempty">Queue is Empty</h1>
+                        </div>
+                        <template v-else>
+                            <thead>
+                                <tr >
+                                    <th class="text-center"  v-for="(header,i) in queuehead" :key="i">{{ header }}</th>
+                                    <th class="text-center">Cancel</th>
                                 </tr>
-                            </draggable>
-                        </tbody>
+                            </thead>
+                            <tbody>
+                                <draggable v-model="queue" style="display: contents;"  @end="mChangePrio" >
+                                    <tr v-for="(data,j) in queue.slice(1)" :key="j" >
+                                        <td v-for="(header,i) in queuehead" :key="i">
+                                            {{ data[header] }}
+                                        </td>
+                                        <td>
+                                    
+                                            <v-icon @click="mToCancel(data)">
+                                                mdi-close
+                                            </v-icon>
+                                        
+                                    
+                                        </td>
+                                    </tr>
+                                </draggable>
+                            </tbody>
+                        </template>
+                     
                     </v-simple-table>
                 </v-card-text>
             </v-card>
@@ -156,7 +184,7 @@
     </v-row>
 
     <!-- NOTE Controller  -->
-    <v-dialog v-model="openctrl" persistent  :max-width="cResizeDialog">
+    <v-dialog v-model="openctrl" :max-width="cResizeDialog">
         <v-card class="text-center" color="black">
             <v-card-title>
                 <div >
@@ -170,12 +198,12 @@
                    @input="mVidDuration"
                 />
                 </div>
-                <v-icon @click="mFullscreen" color="white">
+                <!-- <v-icon @click="mFullscreen" color="white">
                     mdi-fullscreen
                 </v-icon>
                 <v-icon @click="mReload" color="white">
                     mdi-refresh
-                </v-icon>
+                </v-icon> -->
                 <v-spacer/>
                 <v-icon @click="openctrl = false" color="red">
                     mdi-close
@@ -213,7 +241,6 @@
                     <v-icon @click="mCloseUpload" color="red">mdi-close</v-icon>
             </v-card-title>
             <v-card-text>
-                <!-- <v-text-field v-model="file.name" dense outlined background-color="white" placeholder="Title"></v-text-field> -->
                 <v-file-input v-model="file" dense outlined background-color="#D3D3D3" placeholder="attach file here..."></v-file-input>
                 <v-btn class="mt-n4" block @click="!uploading ? mUpload():''" :disabled="file == null" :dark="file == null">
                     <v-progress-circular
@@ -247,8 +274,8 @@ export default {
         
         this.$socket.emit('reqtotaldur')
         
-        this.$socket.on('reloadme', () => {
-            this.mGetQueue()
+        this.$socket.on('reloadme', (cmd) => {
+            this.mGetQueue(cmd)
             
         });
         this.$socket.on('loadtimestamp', (time) => {
@@ -264,9 +291,9 @@ export default {
     },
     data() {
       return {
-        header:[],
+        listhead:[],
         list:[],
-        header2:[],
+        queuehead:[],
         queue:[],
         search:'',
         toupload:false,
@@ -281,37 +308,55 @@ export default {
         isPageSel:false,
         randomset:1,
         current:null,
+        islistloaded:false,
+        isqueueloaded:false,
 
       };
     },
     methods:{
         mGetList(){
+            this.islistloaded = false
             axios.get(`api/play`)
             .then(res=>{
                 if(res.data.length !=0){
                     this.list = res.data
-                    this.header = Object.keys(res.data[0])
+                    this.listhead = Object.keys(res.data[0])
                 }
                 else{
                     this.list = []
                 }
+             
+            })
+            .finally(()=>{
+                setTimeout(() => {
+                    this.islistloaded = true  
+                }, 2000);
+         
             })
         },
-        mGetQueue(){
-           
+        mGetQueue(val){
+            if(!val)
+                this.isqueueloaded = false
             axios.get(`api/play?mode=q`)
             .then(res=>{
                 if(res.data.length !=0){
                     this.queue = res.data
-                    this.header2 = Object.keys(res.data[0])
+                    this.queuehead = Object.keys(res.data[0])
                     this.current = this.queue[0].Title
                 }
                 else{
                     this.queue = []
                 }
             })
+            .finally(()=>{
+                setTimeout(() => {
+                    this.isqueueloaded= true  
+                }, 1000);
+         
+            })
             
         },
+        // NOTE mPagination 
         mPagination(todo){
            if(todo == 'next'){
                 this.page++
@@ -331,13 +376,12 @@ export default {
         mToQueue(data){
             axios.post(`api/play`, data)
             .finally(()=>{
-                this.$socket.emit('reload_data')
+                this.$socket.emit('reload_data','put')
             })
         },
-        //NOTE Upload
+        //NOTE mUpload
         mUpload(){
             const formData = new FormData()
-            // formData.append("name",this.file.name)
             formData.append("content",this.file)
             
             this.uploading = true
@@ -375,13 +419,13 @@ export default {
         mClear(){
             axios.delete(`api/play/clear`)
             .finally(()=>{
-                this.$socket.emit('reload_data')
+                this.$socket.emit('reload_data','clear')
             })
         },
         mToCancel(data){
             axios.delete(`api/play/cancel?no=${data.Prio}`)
             .finally(()=>{
-                this.$socket.emit('reload_data')
+                this.$socket.emit('reload_data','cancel')
             })
         },
         mNext(){
@@ -416,36 +460,32 @@ export default {
   
         },
         mChangePrio(val){
-            axios.patch(`api/play/changeprio?old=${val.oldIndex+1}&new=${val.newIndex+1}`)
-            .finally(() =>{
-                this.$socket.emit('reload_data','changeprio')
-            })
+            if(val.oldIndex != val.newIndex){
+                axios.patch(`api/play/changeprio?old=${val.oldIndex+1}&new=${val.newIndex+1}`)
+                .finally(() =>{
+                    this.$socket.emit('reload_data','changeprio')
+                })
+            }
         }
      
     
     },
     computed:{
-     
+        // NOTE Search 
         cFilter(){
             let result = ''
             if(this.search){
                 result = this.list.filter(rec => rec.Title.toUpperCase().includes(this.search.toUpperCase()))
                 this.pages = Math.ceil(result.length/10)
-                this.page = 1
-               
             }
             else{
                 result = this.list
                 this.pages = Math.ceil(result.length/10)
             }
-             
             return result.slice((this.page-1)*10,(this.page)*10)
                
         },
-        // cQueueHeader(){
-        //     if(this.header2)
-        //         return this.header2.filter( rec => !rec.includes('Link'))
-        // },
+     
         cResizeDialog(){
              return this.$vuetify.breakpoint.xl ? '15%':
              this.$vuetify.breakpoint.lg ? '20%':
@@ -454,12 +494,19 @@ export default {
         }
     },
     watch:{
+        // NOTE pagectrl 
         page(val){
             if(val > this.pages)
                 this.page = this.pages
             if(val < 1)
                 this.page = 1
         },
+
+        search(n,o){
+            if(n != o){
+                this.page = 1   
+            }
+        }
       
     }
 }
@@ -469,10 +516,15 @@ export default {
 td {
     border: 1px solid;
     height: 100% !important;
-    white-space: nowrap;
     padding: 10px 0 10px 0 !important;
+    font-family: DancingScript;
+    font-weight: bold !important;
+    font-size: 20px !important;
   }
-  
-
-
+.promptempty{
+    margin-top: 20px;
+    color: gray;
+    font-size: 50px;
+    font-family: Bitcount;
+}
 </style>
