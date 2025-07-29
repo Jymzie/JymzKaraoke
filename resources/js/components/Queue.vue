@@ -88,7 +88,7 @@
                         </v-btn>
                         <v-btn class="pt-1" :color="isPageSel ? '#D3D3D3':'white'" x-small @click="isPageSel = true">
                             <b v-if="!isPageSel" class="mt-n1">{{ page}}</b>
-                            <v-text-field v-else autofocus maxlength="4" v-model="page" color="white" style="width: 50px;" 
+                            <v-text-field v-else autofocus :maxlength="pages.toString().length" v-model="page" color="white" style="width: 50px;" 
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '')" @blur="isPageSel = false" @keyup.enter="isPageSel = false"/>
                         </v-btn>
                         
