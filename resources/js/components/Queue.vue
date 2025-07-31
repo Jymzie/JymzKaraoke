@@ -200,10 +200,10 @@
                 </div>
                 <!-- <v-icon @click="mFullscreen" color="white">
                     mdi-fullscreen
-                </v-icon>
+                </v-icon> -->
                 <v-icon @click="mReload" color="white">
                     mdi-refresh
-                </v-icon> -->
+                </v-icon> 
                 <v-spacer/>
                 <v-icon @click="openctrl = false" color="red">
                     mdi-close
