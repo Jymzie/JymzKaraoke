@@ -8,9 +8,7 @@
         :controls="controls"
         controlsList="nodownload"
         :loop="loop"
-        style="border-radius: 10px;"
-        :width="width"
-        :height="height"
+        style="height: 100%;width: 100%;position: absolute;top:0;left:0"
         :poster="poster"
         :preload="preload"
         :playsinline="true"
@@ -55,8 +53,6 @@
       src: { type: String, required: true },
       controls: { type: Boolean, required: false, default: false },
       loop: { type: Boolean, required: false, default: false },
-      width: { type: Number, required: false, default: 800 },
-      height: { type: Number, required: false, default: 450 },
       autoplay: { type: Boolean, required: false, default: false },
       muted: { type: Boolean, required: false, default: false },
       poster: { type: String, required: false },

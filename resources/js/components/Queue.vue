@@ -32,7 +32,7 @@
                     
                    
                    <!-- ANCHOR List  -->
-                    <v-simple-table  class="text-center"   fixed-header :height="($vuetify.breakpoint.height)*.57">
+                    <v-simple-table  class="text-center"   fixed-header :height="$vuetify.breakpoint.mdAndUp ? $vuetify.breakpoint.height - 260:200">
                         <v-progress-circular
                             color="primary"
                             indeterminate
@@ -88,7 +88,7 @@
                         </v-btn>
                         <v-btn class="pt-1" :color="isPageSel ? '#D3D3D3':'white'" x-small @click="isPageSel = true">
                             <b v-if="!isPageSel" class="mt-n1">{{ page}}</b>
-                            <v-text-field v-else autofocus :maxlength="pages.toString().length" v-model="page" color="white" style="width: 50px;" 
+                            <v-text-field v-else autofocus maxlength="4" v-model="page" color="white" style="width: 50px;" 
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '')" @blur="isPageSel = false" @keyup.enter="isPageSel = false"/>
                         </v-btn>
                         
@@ -138,7 +138,7 @@
                     </div>
                    
                     <!-- ANCHOR Queue  -->
-                    <v-simple-table  class="text-center" fixed-header :height="($vuetify.breakpoint.height)*.65">
+                    <v-simple-table  class="text-center" fixed-header :height="$vuetify.breakpoint.mdAndUp ? $vuetify.breakpoint.height - 203:200">
                         <v-progress-circular
                             color="primary"
                             indeterminate
@@ -200,7 +200,7 @@
                 </div>
                 <!-- <v-icon @click="mFullscreen" color="white">
                     mdi-fullscreen
-                </v-icon> -->
+                </v-icon>-->
                 <v-icon @click="mReload" color="white">
                     mdi-refresh
                 </v-icon> 

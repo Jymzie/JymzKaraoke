@@ -1,5 +1,5 @@
 <template>
-    <div class="app d-flex  justify-center align-center" @click="mRetainfocus" style="height: 85vh;">
+    <div  @click="mRetainfocus" @mousemove="mRetainfocus" :style="divstyle()">
       <videoplayer
         class="videoplayer"
         id="videoplayer"
@@ -141,6 +141,11 @@
       };
     },
     methods: {
+      divstyle(){
+        return {
+          height:(this.$vuetify.breakpoint.height-90)+'px',
+        }
+      },
       onPlayerPlay({ event, player }) {
         console.log(event.type);
         player.setPlaying(true);
@@ -212,6 +217,8 @@
           
         },
        mRetainfocus(){
+        console.log('magfocus')
+        this.$emit('showappbar')
         setTimeout(() => {
           this.$refs.invisibleElement.focus()
         }, 1)
